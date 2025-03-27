@@ -1,0 +1,17 @@
+{
+  "name": "whatsapp-bot-bridge",
+  "version": "1.0.0",
+  "description": "Bridge between Python Flask app and WhatsApp Web JS",
+  "main": "whatsapp-server.js",
+  "scripts": {
+    "start": "node whatsapp-server.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.26.0"
+  }
+}

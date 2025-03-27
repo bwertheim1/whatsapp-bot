@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Invitaciones - WhatsApp Bot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistema de Invitaciones</h1>
+            <p class="subtitle">Gestiona tus eventos e invitados con WhatsApp</p>
+        </header>
+
+        <div class="feature-box">
+            <div class="feature">
+                <h2>Organiza tu evento</h2>
+                <p>Crea un evento, importa tu lista de invitados y envía invitaciones personalizadas por WhatsApp con un solo clic.</p>
+            </div>
+        </div>
+
+        <section class="steps">
+            <h2>¿Cómo funciona?</h2>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Regístrate como organizador</h3>
+                    <p>Completa el formulario a continuación para registrarte como organizador y recibir un código de verificación en tu WhatsApp.</p>
+                    
+                    <div class="form-container">
+                        <form id="register-form">
+                            <div class="form-group">
+                                <label for="phone">Número de teléfono (con código de país):</label>
+                                <input type="tel" id="phone" name="phone" placeholder="Ej: 56912345678" required>
+                                <small>Ingresa tu número sin espacios ni símbolos. Ej: 56912345678</small>
+                            </div>
+                            <button type="submit" class="btn primary-btn">Recibir código</button>
+                        </form>
+                        <div id="registration-result" class="result-box hidden"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Verifica tu número</h3>
+                    <p>Recibirás un código de verificación por WhatsApp. Responde con <strong>!verificar CÓDIGO</strong> para activar tu cuenta de organizador.</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Crea tu evento</h3>
+                    <p>Una vez verificado, usa el comando <strong>!crear "Nombre del evento" "Descripción"</strong> para crear tu primer evento.</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>Importa tus invitados</h3>
+                    <p>Envía un archivo Excel con la lista de invitados. <a href="plantilla_invitados.xlsx" download>Descarga la plantilla aquí</a>.</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <h3>Envía las invitaciones</h3>
+                    <p>Utiliza el comando <strong>!enviar</strong> para iniciar el envío de invitaciones a tus contactos automáticamente.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="commands">
+            <h2>Comandos disponibles</h2>
+            <table class="commands-table">
+                <tr>
+                    <th>Comando</th>
+                    <th>Descripción</th>
+                </tr>
+                <tr>
+                    <td>!verificar CÓDIGO</td>
+                    <td>Activa tu cuenta de organizador con el código recibido</td>
+                </tr>
+                <tr>
+                    <td>!crear "Evento" "Descripción"</td>
+                    <td>Crea un nuevo evento</td>
+                </tr>
+                <tr>
+                    <td>!eventos</td>
+                    <td>Muestra tus eventos registrados</td>
+                </tr>
+                <tr>
+                    <td>!borrar (número)</td>
+                    <td>Borra un evento por su número en la lista</td>
+                </tr>
+                <tr>
+                    <td>!enviar</td>
+                    <td>Inicia el envío de invitaciones</td>
+                </tr>
+                <tr>
+                    <td>!reporte</td>
+                    <td>Muestra el estado actual de respuestas</td>
+                </tr>
+                <tr>
+                    <td>!excel</td>
+                    <td>Recibe el archivo Excel actualizado</td>
+                </tr>
+                <tr>
+                    <td>!ayuda</td>
+                    <td>Muestra todos los comandos disponibles</td>
+                </tr>
+            </table>
+        </section>
+
+        <footer>
+            <p>Desarrollado con ❤️ para la gestión de eventos</p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('register-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const phone = document.getElementById('phone').value.trim();
+            const resultBox = document.getElementById('registration-result');
+            
+            if (!phone) {
+                showResult('Por favor, ingresa un número de teléfono válido.', false);
+                return;
+            }
+            
+            // Mostrar mensaje de espera
+            showResult('Enviando código de verificación...', true, true);
+            
+            try {
+                const response = await fetch('/generar-codigo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        numero: phone
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(`¡Código enviado! Revisa tu WhatsApp y sigue las instrucciones para verificar tu cuenta.`, true);
+                } else {
+                    showResult(`Error: ${data.message}`, false);
+                }
+            } catch (error) {
+                showResult(`Error: ${error.message}`, false);
+            }
+        });
+        
+        function showResult(message, success, waiting = false) {
+            const resultBox = document.getElementById('registration-result');
+            resultBox.textContent = message;
+            resultBox.className = 'result-box';
+            
+            if (waiting) {
+                resultBox.classList.add('waiting');
+            } else if (success) {
+                resultBox.classList.add('success');
+            } else {
+                resultBox.classList.add('error');
+            }
+        }
+    </script>
+</body>
+</html> 
